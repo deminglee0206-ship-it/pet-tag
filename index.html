@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Found me! 我走失了</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #E6EEE9;
+    --surface: #FFFFFF;
+    --ink: #1B3A33;
+    --muted: #5B7169;
+    --line: #CFDCD5;
+    --wa: #1FA855;
+    --wa-ink: #FFFFFF;
+    --call: #1B3A33;
+    --call-ink: #FFFFFF;
+    --alert: #F2B134;
+    --alert-ink: #3A2A00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12211D;
+      --surface: #1B2F29;
+      --ink: #EAF3EE;
+      --muted: #9DB5AB;
+      --line: #2C4A41;
+      --call: #EAF3EE;
+      --call-ink: #12211D;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  }
+  main { max-width: 480px; margin: 0 auto; padding: 20px 18px 40px; }
+
+  .banner {
+    background: var(--alert);
+    color: var(--alert-ink);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .banner small { display: block; font-weight: 500; margin-top: 2px; }
+
+  .hero { text-align: center; padding: 26px 0 20px; }
+  .photo {
+    width: 148px; height: 148px; border-radius: 50%;
+    margin: 0 auto 16px; display: block; object-fit: cover;
+    border: 5px solid var(--surface);
+  }
+  .photo.placeholder {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ink); color: var(--bg);
+    font-family: "Fraunces", Georgia, serif; font-size: 64px; font-weight: 700;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 44px; line-height: 1.1; margin: 0; font-weight: 700;
+  }
+  .sub { color: var(--muted); margin: 6px 0 0; }
+
+  .actions { display: grid; gap: 12px; margin: 8px 0 26px; }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; min-height: 60px; padding: 14px 18px;
+    border: 0; border-radius: 16px;
+    font: inherit; font-size: 18px; font-weight: 700;
+    text-decoration: none; cursor: pointer;
+  }
+  .btn small { font-weight: 500; font-size: 14px; opacity: .85; display: block; }
+  .btn.wa { background: var(--wa); color: var(--wa-ink); }
+  .btn.call { background: var(--call); color: var(--call-ink); }
+  .btn.loc { background: var(--surface); color: var(--ink); border: 2px solid var(--ink); }
+  .btn:focus-visible { outline: 3px solid var(--alert); outline-offset: 3px; }
+  .btn:active { transform: scale(.985); }
+  .btn[disabled] { opacity: .6; cursor: progress; }
+
+  #status {
+    margin: -10px 0 22px; padding: 12px 14px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    font-size: 15px; display: none; word-break: break-word;
+  }
+  #status.show { display: block; }
+  #status.error { border-color: #C0453A; }
+  #status a { color: inherit; font-weight: 700; }
+
+  section.card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 18px; padding: 18px 18px 6px; margin-bottom: 16px;
+  }
+  h2 { font-size: 19px; margin: 0 0 10px; font-weight: 700; }
+  dl { margin: 0; }
+  .row { padding: 10px 0; border-top: 1px solid var(--line); }
+  .row:first-of-type { border-top: 0; padding-top: 0; }
+  dt { color: var(--muted); font-size: 14px; }
+  dd { margin: 2px 0 0; font-weight: 500; }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding-top: 10px; }
+  @media (prefers-reduced-motion: reduce) { .btn:active { transform: none; } }
+</style>
+</head>
+<body>
+
+<main>
+  <div class="banner" id="banner">
+    我可能走失了，请帮我联络主人。谢谢你！
+    <small>I might be lost. Please help me get home. Thank you!</small>
+  </div>
+
+  <div class="hero">
+    <div id="photoBox"></div>
+    <h1 id="petName"></h1>
+    <p class="sub" id="petSub"></p>
+  </div>
+
+  <div class="actions">
+    <a class="btn wa" id="btnWa" href="#">
+      <span>WhatsApp 主人<small>Message the owner</small></span>
+    </a>
+    <a class="btn call" id="btnCall" href="#">
+      <span>打电话给主人<small>Call the owner</small></span>
+    </a>
+    <button class="btn loc" id="btnLoc" type="button">
+      <span>发送我的位置给主人<small>Send my location to the owner</small></span>
+    </button>
+  </div>
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <section class="card">
+    <h2>健康与病史 Health notes</h2>
+    <dl id="medical"></dl>
+  </section>
+
+  <section class="card">
+    <h2>关于我 About me</h2>
+    <dl id="about"></dl>
+  </section>
+
+  <footer>Tap-to-find pet tag · trial version</footer>
+</main>
+
+<script>
+/* =====================================================
+   只需要改这一块 / EDIT ONLY THIS BLOCK
+   ===================================================== */
+const PET = {
+  name: "GARLIC",                       // 宠物姓名
+  subtitle: "Cocakapoo · 1 岁",  // 品种 / 年龄（可留空 ""）
+  photo: "",                           // 照片网址或文件名，如 "mochi.jpg"。留空则显示首字母
+
+  ownerName: "lee",                   // 主人称呼
+  phone: "60187799496",                // 主人电话：国家码开头，不要加 + 或空格（马来西亚 = 60，去掉开头的 0）
+
+  medical: [                           // 病史：想加就加，想删就删
+    { label: "过敏 Allergies",         value: "鸡肉 Chicken" },
+    { label: "长期病症 Conditions",    value: "无 None" },
+    { label: "疫苗 Vaccinations",      value: "狂犬病、八合一（2025年10月）" },
+    { label: "绝育 Neutered",          value: "是 Yes" },
+    { label: "兽医 Vet",               value: "Klinik Haiwan Contoh · 07-123 4567" }
+  ],
+
+  about: [
+    { label: "性格 Temperament",       value: "友善，怕大声 Friendly, scared of loud noise" },
+    { label: "芯片号 Microchip",       value: "" }
+  ]
+};
+/* ===================================================== */
+
+const $ = (id) => document.getElementById(id);
+const phone = PET.phone.replace(/\D/g, "");
+
+/* ---------- 渲染页面 ---------- */
+document.title = PET.name + " – Found me!";
+$("petName").textContent = PET.name;
+$("petSub").textContent = PET.subtitle || "";
+
+if (PET.photo) {
+  const img = document.createElement("img");
+  img.className = "photo";
+  img.src = PET.photo;
+  img.alt = PET.name + " 的照片";
+  img.onerror = () => { $("photoBox").replaceChildren(placeholder()); };
+  $("photoBox").appendChild(img);
+} else {
+  $("photoBox").appendChild(placeholder());
+}
+function placeholder() {
+  const d = document.createElement("div");
+  d.className = "photo placeholder";
+  d.textContent = (PET.name || "?").charAt(0).toUpperCase();
+  return d;
+}
+
+function renderList(el, items) {
+  const rows = (items || []).filter((i) => i.value && i.value.trim());
+  if (!rows.length) { el.closest("section").style.display = "none"; return; }
+  rows.forEach((i) => {
+    const row = document.createElement("div");
+    row.className = "row";
+    const dt = document.createElement("dt");
+    dt.textContent = i.label;
+    const dd = document.createElement("dd");
+    dd.textContent = i.value;
+    row.append(dt, dd);
+    el.appendChild(row);
+  });
+}
+renderList($("medical"), PET.medical);
+renderList($("about"), PET.about);
+
+/* ---------- 一键联络 ---------- */
+const hello = "你好，我在 " + PET.name + " 的 NFC 吊牌上找到你的联络方式。我找到它了！\n" +
+              "Hi, I found " + PET.name + " via the NFC tag.";
+$("btnWa").href = "https://wa.me/" + phone + "?text=" + encodeURIComponent(hello);
+$("btnWa").target = "_blank";
+$("btnWa").rel = "noopener";
+$("btnCall").href = "tel:+" + phone;
+
+/* ---------- 发送坐标 ---------- */
+const status = $("status");
+function showStatus(html, isError) {
+  status.innerHTML = html;
+  status.className = "show" + (isError ? " error" : "");
+}
+
+$("btnLoc").addEventListener("click", () => {
+  if (!("geolocation" in navigator)) {
+    showStatus("这个浏览器无法取得位置，请直接用上面的 WhatsApp 或电话联络主人。<br>This browser can’t share location. Please use WhatsApp or call instead.", true);
+    return;
+  }
+  const btn = $("btnLoc");
+  btn.disabled = true;
+  showStatus("正在取得位置，请在弹出的窗口按「允许」…<br>Getting your location. Please tap “Allow” when asked…");
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      btn.disabled = false;
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      const acc = Math.round(pos.coords.accuracy);
+      const mapLink = "https://www.google.com/maps?q=" + lat + "," + lng;
+
+      const msg = "我找到 " + PET.name + " 了！我现在的位置：\n" + mapLink +
+                  "\n（误差约 " + acc + " 米）\n\n" +
+                  "I found " + PET.name + "! My location:\n" + mapLink + "\n(accuracy ~" + acc + " m)";
+      const waUrl = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+
+      showStatus(
+        "已取得位置（误差约 " + acc + " 米）。<br>" +
+        "<a href='" + waUrl + "' target='_blank' rel='noopener'>点这里用 WhatsApp 发送给主人 Send via WhatsApp</a><br>" +
+        "<a href='" + mapLink + "' target='_blank' rel='noopener'>在地图上查看 View on map</a>"
+      );
+      window.open(waUrl, "_blank", "noopener");
+    },
+    (err) => {
+      btn.disabled = false;
+      const reasons = {
+        1: "位置权限被拒绝。请在浏览器设置里允许位置，再试一次；或直接 WhatsApp 主人。<br>Location permission was denied. Allow it in your browser settings and try again, or message the owner directly.",
+        2: "暂时无法取得位置，请移到空旷处再试。<br>Location unavailable. Try again from an open area.",
+        3: "取得位置超时，请再试一次。<br>Timed out. Please try again."
+      };
+      showStatus(reasons[err.code] || "取得位置失败，请再试一次。<br>Couldn’t get location. Please try again.", true);
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+});
+</script>
+</body>
+</html>
